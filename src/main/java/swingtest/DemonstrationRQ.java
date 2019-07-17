@@ -2,20 +2,17 @@ package swingtest;
 
 import core.Log4RQ;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
-public class TreeViewTest {
+public class DemonstrationRQ {
 
     private RemoteWebDriver driver;
 
@@ -161,57 +158,6 @@ public class TreeViewTest {
         return lElems.size();
     }
 
-    private String getScreenshot(){
-        try {
-            Thread.sleep(1000);
-            File screenshotAs = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-            System.out.println(screenshotAs.getAbsolutePath());
-            return screenshotAs.getAbsolutePath();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void launchApplication(String url) throws MalformedURLException {
-        driver = new RemoteWebDriver(
-                new URL("http://" + url),
-                new DesiredCapabilities("java", "1.0", org.openqa.selenium.Platform.ANY)
-        );
-
-        String title = driver.getTitle();
-        log("Found title is " + title);
-
-        WebElement wTree = driver.findElement(By.cssSelector("tree"));
-        List<WebElement> elems = driver.findElements(By.cssSelector("*"));
-//        printOutChildsInfo(elems);
-
-        List<WebElement> el02 = driver.findElements(By.cssSelector("layered-pane"));
-        List<WebElement> el03 = driver.findElements(By.cssSelector("toggle-button"));
-
-        WebElement wElem02 = this.findWebElementByClass(driver,"*[type='com.ur.g5.polyscope.WelcomeScreen']");
-        WebElement wElellm03 = this.findWebElementByClass(driver,"*[type*='WelcomeScreen']");
-
-//        Set<String> szHandles = driver.getWindowHandles();
-
-        WebElement weHeader = this.findWebElementByClass(driver,"*[type*='HeaderMenu']");
-        List<WebElement> lButtons = weHeader.findElements(By.cssSelector("*"));
-
-        this.printOutChildsInfo(lButtons);
-
-        WebElement weButton = weHeader.findElement(By.cssSelector("toggle-button[CText='Program']"));
-
-
-        //WebElement weButton = weHeader.findElement(By.cssSelector("toggle-button[text*='Program']"));
-
-
-        // Get Cobombo  elements
-        List<String> options = this.listComboOptions(driver.findElement(By.cssSelector("combo-box")));
-
-
-//        new Actions(driver).moveToElement(el02.get(0), 20, 5).perform();
-
-    }
 
     private void log(String sz){
         System.out.println(Log4RQ.ANSI_BLUE + sz + Log4RQ.ANSI_RESET);
@@ -224,13 +170,74 @@ public class TreeViewTest {
             szURL = args[0];
         }
 
-        TreeViewTest app = new TreeViewTest();
+        DemonstrationRQ app = new DemonstrationRQ();
         try {
-            app.launchApplication(szURL);
+            app.javaDriverDemo(szURL);
         } catch(Exception exp){
             System.out.println("Exception occurred while connecting to JavaDriver [ "
                     + exp.getMessage() + " ]");
         }
+    }
+
+    public void javaDriverDemo(String url) throws MalformedURLException {
+        driver = new RemoteWebDriver(
+                new URL("http://" + url),
+                new DesiredCapabilities("java", "1.0", Platform.ANY)
+        );
+
+        String title = driver.getTitle();
+        log("Found title is " + title);
+
+        // Find the header element which hold the Program button
+        WebElement weHeader = this.findWebElementByClass(driver,"*[type*='HeaderMenu']");
+
+        // Find the Program button and click it
+        WebElement weButton = weHeader.findElement(By.cssSelector("toggle-button[CText='Program']"));
+        weButton.click();
+
+        // Once click find the Program tab which hold the URCAps program functions
+        WebElement weProgram = this.findWebElementByClass(driver,"*[type*='ProgramTab']");
+
+        // Find the URCaps action list
+        //WebElement weAction = weProgram.findElement(By.cssSelector("*[type*='AddNodeStructureView'])"));
+        WebElement weUrCaps = weProgram.findElement(By.cssSelector("toggle-button[CText*='URCaps']"));
+        weUrCaps.click();
+        WebElement weInsertion = weProgram.findElement(By.cssSelector("button[CText*='Insertion']"));
+        weInsertion.click();
+
+
+        //
+        //  TREEVIEW interaction
+        //
+        WebElement weTree = weProgram.findElement(By.cssSelector("tree"));
+        List<WebElement> teElems = weTree.findElements(By.cssSelector(".::all-nodes"));
+
+        this.printOutChildsInfo(teElems);
+
+        for(WebElement treeElem : teElems){
+            if(treeElem.getText().compareTo("Insertion") == 0){
+                treeElem.click();
+            }
+        }
+
+        // Click Linear
+        WebElement wBtnLinear = weProgram.findElement(By.cssSelector("button[CText*='Linear']"));
+        wBtnLinear.click();
+
+
+        //WebElement weAction = weProgram.findElement(By.cssSelector("*[type*='AddNodeStructureView'])"));
+
+        // Add additional element
+        weInsertion = weProgram.findElement(By.cssSelector("button[CText*='Force<br/>Control']"));
+        weInsertion.click();
+
+        weInsertion = weProgram.findElement(By.cssSelector("button[CText*='Force Event']"));
+        weInsertion.click();
+
+        weInsertion = weProgram.findElement(By.cssSelector("button[CText*='Collision<br/>Detection']"));
+        weInsertion.click();
+
+        log("END TESTING");
     }
 
 }
